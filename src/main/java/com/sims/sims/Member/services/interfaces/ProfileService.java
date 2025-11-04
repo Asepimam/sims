@@ -1,5 +1,7 @@
 package com.sims.sims.Member.services.interfaces;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.sims.sims.shared.dtos.ProfileResponseDto;
 import com.sims.sims.shared.dtos.ProfileResponseWithEmailDto;
 import com.sims.sims.shared.dtos.UpdateProfileDto;
