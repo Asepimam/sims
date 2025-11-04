@@ -10,6 +10,7 @@ import com.sims.sims.Member.entities.User;
 import com.sims.sims.Member.repositories.interfaces.ProfileRepository;
 import com.sims.sims.Member.repositories.interfaces.UserRepository;
 import com.sims.sims.Member.services.interfaces.AuthService;
+import com.sims.sims.Transaction.repository.interfaces.WalletRepository;
 import com.sims.sims.shared.dtos.UserCreateDto;
 import com.sims.sims.shared.exception.*;
 import com.sims.sims.shared.security.JwtUtil;
@@ -23,6 +24,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private ProfileRepository profileRepository;
+
+    @Autowired
+    private WalletRepository walletRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -52,6 +56,9 @@ public class AuthServiceImpl implements AuthService {
             newUser.getId(),
             " "
         );
+
+        // create wallet
+        walletRepository.createWallet(newUser.getId());
         return "User created successfully";
     }
 
