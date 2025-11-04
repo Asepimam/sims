@@ -17,7 +17,7 @@ public class Banner {
     private Long id;
     private String bannerName;
     private String bannerImage;
-    private String descriptions;
+    private String description;
 
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
