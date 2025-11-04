@@ -25,13 +25,14 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
         this.customAuthEntryPoint = customAuthEntryPoint;
     }
-
+    //security filter
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable()) 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/login", "/auth/register").permitAll()
+            
+                .requestMatchers("/auth/login", "/auth/register", "/informations/banner").permitAll() // permission set
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -40,11 +41,12 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // password encoder bean
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
+    // authentication manager bean
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
