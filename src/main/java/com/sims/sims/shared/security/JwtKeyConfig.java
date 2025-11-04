@@ -5,13 +5,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
+import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
 @Configuration
 public class JwtKeyConfig {
-    //path to keys
-    @Value("classpath:keys/private-pkcs8.pem") 
+
+    @Value("classpath:keys/private-pkcs8.pem")
     private Resource privateKeyResource;
 
     @Value("classpath:keys/public.pem")
@@ -19,11 +20,15 @@ public class JwtKeyConfig {
 
     @Bean
     public PrivateKey privateKey() throws Exception {
-        return RsaKeyUtils.readPrivateKey(privateKeyResource.getFile().getAbsolutePath());
+        try (InputStream in = privateKeyResource.getInputStream()) {
+            return RsaKeyUtils.readPrivateKey(in);
+        }
     }
 
     @Bean
     public PublicKey publicKey() throws Exception {
-        return RsaKeyUtils.readPublicKey(publicKeyResource.getFile().getAbsolutePath());
+        try (InputStream in = publicKeyResource.getInputStream()) {
+            return RsaKeyUtils.readPublicKey(in);
+        }
     }
 }
