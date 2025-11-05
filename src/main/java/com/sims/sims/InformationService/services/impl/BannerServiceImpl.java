@@ -9,6 +9,7 @@ import com.sims.sims.InformationService.entities.Banner;
 import com.sims.sims.InformationService.repositories.impl.BannerRepositoryImpl;
 import com.sims.sims.InformationService.services.interfaces.BannerService;
 import com.sims.sims.shared.dtos.BannerResponseDto;
+import com.sims.sims.shared.exception.BusinessException;
 
 @Service
 public class BannerServiceImpl implements BannerService {
@@ -17,14 +18,18 @@ public class BannerServiceImpl implements BannerService {
 
     @Override
     public List<BannerResponseDto> getAllBanners() {
-        List<Banner> banners = bannerRepository.getAllBanners();
-        return banners.stream().map(banner -> {
-            BannerResponseDto dto = new BannerResponseDto();
-            dto.setBannerName(banner.getBannerName());
-            dto.setBannerImage(banner.getBannerImage());
-            dto.setDescription(banner.getDescription());
-            return dto;
-        }).toList();
+        try {
+            List<Banner> banners = bannerRepository.getAllBanners();
+            return banners.stream().map(banner -> {
+                BannerResponseDto dto = new BannerResponseDto();
+                dto.setBannerName(banner.getBannerName());
+                dto.setBannerImage(banner.getBannerImage());
+                dto.setDescription(banner.getDescription());
+                return dto;
+            }).toList();
+        } catch (Exception e) {
+            throw new BusinessException("Error retrieving banners");
+        }
     }
     
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.sims.sims.InformationService.repositories.interfaces.ServiceSimsRepository;
 import com.sims.sims.InformationService.services.interfaces.ServiceSimsService;
 import com.sims.sims.shared.dtos.ServiceSimsResponseDto;
+import com.sims.sims.shared.exception.BusinessException;
 
 @Service
 public class ServiceSimsImpl implements ServiceSimsService {
@@ -16,14 +17,18 @@ public class ServiceSimsImpl implements ServiceSimsService {
 
     @Override
     public List<ServiceSimsResponseDto> getAllServices() {
-        List<com.sims.sims.InformationService.entities.Service> services = serviceSimsRepository.getAllServices();
-        return services.stream().map(service ->{
-            ServiceSimsResponseDto dto = new ServiceSimsResponseDto();
-            dto.setServiceName(service.getServiceName());
-            dto.setServiceCode(service.getServiceCode());
-            dto.setServiceIcon(service.getServiceIcon());
-            dto.setServiceTarif(service.getServiceTarif());
-            return dto;
-        }).toList();
+        try {
+            List<com.sims.sims.InformationService.entities.Service> services = serviceSimsRepository.getAllServices();
+            return services.stream().map(service -> {
+                ServiceSimsResponseDto dto = new ServiceSimsResponseDto();
+                dto.setServiceName(service.getServiceName());
+                dto.setServiceCode(service.getServiceCode());
+                dto.setServiceIcon(service.getServiceIcon());
+                dto.setServiceTarif(service.getServiceTarif());
+                return dto;
+            }).toList();
+        } catch (Exception e) {
+            throw new BusinessException("Error retrieving services");
+        }
     }
 }
