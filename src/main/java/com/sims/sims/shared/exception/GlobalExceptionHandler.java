@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -86,6 +87,21 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+    /**
+     * Handle EmptyResultDataAccessException
+     * Status: 404 - Not Found
+     */
+    @ExceptionHandler(EmptyResultDataAccessException.class)
+    public ResponseEntity<ResponseDto> handleEmptyResultDataAccessException(EmptyResultDataAccessException ex) {
+        ResponseDto response = new ResponseDto(
+            102,
+            "Resource not found",
+            null
+        );
+        
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
 
     /**
      * Handle database errors
