@@ -4,8 +4,12 @@ import com.sims.sims.Member.entities.Profile;
 import com.sims.sims.Member.repositories.interfaces.ProfileRepository;
 import com.sims.sims.shared.dtos.ProfileResponseWithEmailDto;
 import com.sims.sims.shared.dtos.UpdateProfileDto;
+import com.sims.sims.shared.exception.ResourceNotFoundException;
+
+import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -25,10 +29,18 @@ public class ProfileRepositoryImpl implements ProfileRepository {
     }
 
     @Override
+    @Transactional
     public Profile createProfile(String firstName, String lastName, Long userId, String profileImageUrl) {
+        String sqlCheckUser = "SELECT COUNT(*) FROM profiles WHERE user_id = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sqlCheckUser, Integer.class, userId);
+        if (count != null && count > 0) {
+            throw new ResourceNotFoundException("Profile already exists for userId");
+        }
+        
         String sql = """
-            INSERT INTO profiles (first_name, last_name, profile_image_url, user_id)
-            VALUES (?, ?, ?, ?) RETURNING *
+            INSERT INTO profiles (first_name, last_name, profile_image_url, user_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?) RETURNING *
             """;
         LocalDateTime now = LocalDateTime.now();
         return jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
@@ -40,7 +52,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
                 rs.getLong("user_id"),
                 rs.getObject("created_at", LocalDateTime.class),
                 rs.getObject("updated_at", LocalDateTime.class)
-            ), firstName, lastName, profileImageUrl, userId);
+            ), firstName, lastName, profileImageUrl, userId, now, now);
     }
 
     @Override
@@ -65,14 +77,21 @@ public class ProfileRepositoryImpl implements ProfileRepository {
                     rs.getObject("updated_at", LocalDateTime.class)
                 ), userId);
         } catch (EmptyResultDataAccessException e) {
-            throw new RuntimeException("Profile not found for userId: " + userId);
+            throw new RuntimeException("Profile not found for userId: ");
         }
     }
 
     @Override
+    @Transactional
     public ProfileResponseWithEmailDto updateProfile(Long userId, UpdateProfileDto profile) {
         List<Object> params = new ArrayList<>();
         List<String> updates = new ArrayList<>();
+        String checkUser = "SELECT COUNT(*) FROM profiles WHERE user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(checkUser, Integer.class, userId);
+        
+        if (count == null || count == 0) {
+            throw new ResourceNotFoundException("Profile not found for userId: ");
+        }
 
         if (profile.getFirstName() != null && !profile.getFirstName().trim().isEmpty()) {
             updates.add("first_name = ?");
@@ -90,12 +109,12 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
         params.add(LocalDateTime.now()); 
         params.add(userId);
-
+        LocalDateTime now = LocalDateTime.now();
         String sql = "UPDATE profiles SET " + 
                     String.join(", ", updates) + 
                     ", updated_at = ? WHERE user_id = ?";
 
-        int rows = jdbcTemplate.update(sql, params.toArray());
+        int rows = jdbcTemplate.update(sql, params.toArray(), now);
 
         if (rows > 0) {
             return getProfileWithEmailById(userId);
@@ -110,7 +129,13 @@ public class ProfileRepositoryImpl implements ProfileRepository {
     }
 
     @Override
+    @Transactional
     public ProfileResponseWithEmailDto updateProfileImage(Long userId, String profileImageUrl) {
+        String sqlCheckUser = "SELECT COUNT(*) FROM profiles WHERE user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sqlCheckUser, Integer.class, userId);
+        if (count == null || count == 0) {
+            throw new ResourceNotFoundException("Profile not found for userId: ");
+        }
         String sql = """
             UPDATE profiles
             SET profile_image_url = ?, updated_at = ?

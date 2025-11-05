@@ -11,6 +11,7 @@ import com.sims.sims.Member.repositories.interfaces.UserRepository;
 import com.sims.sims.Member.services.interfaces.ProfileService;
 import com.sims.sims.shared.dtos.ProfileResponseWithEmailDto;
 import com.sims.sims.shared.dtos.UpdateProfileDto;
+import com.sims.sims.shared.exception.BusinessException;
 
 import jakarta.transaction.Transactional;
 
@@ -28,7 +29,7 @@ public class ProfileServiceImpl implements ProfileService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new BusinessException("User not found");
         }
         ProfileResponseWithEmailDto profile = profileRepository.getProfileWithEmailById(user.getId());
         return profile;
@@ -40,7 +41,7 @@ public class ProfileServiceImpl implements ProfileService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new BusinessException("User not found");
         }
         ProfileResponseWithEmailDto updatedProfile = profileRepository.updateProfile(user.getId(), profile);
         return updatedProfile;
@@ -52,7 +53,7 @@ public class ProfileServiceImpl implements ProfileService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new BusinessException("User not found");
         }
         ProfileResponseWithEmailDto updatedProfile = profileRepository.updateProfileImage(user.getId(), profileImageUrl);
         return updatedProfile;
