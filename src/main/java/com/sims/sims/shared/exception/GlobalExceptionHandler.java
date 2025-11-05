@@ -71,6 +71,23 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle resource not found errors
+     * Status: 404 - Not Found
+     * Handle resource not found errors
+     * Status: 404 - Not Found
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ResponseDto> handleResourceNotFound(ResourceNotFoundException ex) {
+        ResponseDto response = new ResponseDto(
+            102,
+            ex.getMessage(),
+            null
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    /**
      * Handle database errors
      * Status: 500 - Database Error
      */
