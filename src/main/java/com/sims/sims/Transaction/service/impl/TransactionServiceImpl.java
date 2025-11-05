@@ -18,6 +18,8 @@ import com.sims.sims.shared.dtos.ResponseCreateTransactionWithService;
 import com.sims.sims.shared.dtos.ResponsesHistoryTransaction;
 import com.sims.sims.shared.dtos.UpdateAmountDto;
 import com.sims.sims.shared.dtos.WalletResponseDto;
+import com.sims.sims.shared.exception.BusinessException;
+import com.sims.sims.shared.exception.ResourceNotFoundException;
 import com.sims.sims.shared.utils.InvoiceNumber;
 
 import jakarta.transaction.Transactional;
@@ -77,9 +79,13 @@ public class TransactionServiceImpl  implements TransactionService {
     public ResponseCreateTransactionWithService createTransactionUsingService(CreateTransactionDto createTransactionDto) {
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (email == null) {
+            throw new BusinessException("User not found");
+        }
+        
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         String invoiceNumber = InvoiceNumber.generatedInvoiceNumber();
         ResponseCreateTransactionWithService transaction = transactionRepository.createTransactionaUsingService(
@@ -87,6 +93,9 @@ public class TransactionServiceImpl  implements TransactionService {
             invoiceNumber,
             createTransactionDto.getServiceCode()
         );
+        if (transaction == null) {
+            throw new ResourceNotFoundException("Transaction failed");
+        }
         return transaction;
     }
 
